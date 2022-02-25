@@ -9,5 +9,5 @@ public interface Game {
 
     void render();
 
-    void update();
+    void update(double sleepTime);
 }

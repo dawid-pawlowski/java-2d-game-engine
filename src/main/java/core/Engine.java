@@ -13,15 +13,16 @@ import java.nio.IntBuffer;
 
 public class Engine implements Runnable {
 
-    public final int WIDTH = 800;
-    public final int HEIGHT = 600;
-    private final int FPS = 60;
+    public final int WIDTH = 1024;
+    public final int HEIGHT = 768;
+    private final int FPS = 240;
     private final PixelBuffer<IntBuffer> pixelBuffer;
     private final Image output;
     private final Renderer renderer;
     private final MouseInput mouseInput;
     private final KeyboardInput keyboardInput;
     private Game game;
+    private boolean running = false;
 
     public Engine() {
         IntBuffer intBuffer = IntBuffer.allocate(WIDTH * HEIGHT);
@@ -36,6 +37,7 @@ public class Engine implements Runnable {
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.start();
+        running = true;
     }
 
     public void setGame(Game game) {
@@ -62,41 +64,40 @@ public class Engine implements Runnable {
     }
 
     public void run() {
-        long startTime = System.currentTimeMillis();
-        long skipTime = 1000L / FPS;
-        long sleepTime;
-        long frameTime = 0;
+        long startTimeMillis = System.currentTimeMillis();
+        long startTime = System.nanoTime();
+        long skipTime = 1000000000 / FPS;
+        long sleepTime = 0;
         long frames = 0;
-        long fps = 0;
 
-        while (true) {
-            keyboardInput.update();
-            mouseInput.update();
+        while (running) {
+            long currentTime = System.nanoTime();
+            sleepTime += (currentTime - startTime);
+            startTime = currentTime;
 
-            game.update();
-            game.render();
+            if (sleepTime >= skipTime) {
+                keyboardInput.update();
+                mouseInput.update();
+                game.update(sleepTime);
+                game.render();
 
-            startTime += skipTime;
-            sleepTime = startTime - System.currentTimeMillis();
-            frameTime += sleepTime;
+                sleepTime -= skipTime;
+                frames++;
 
-            if (frameTime >= 1000) {
-                frameTime = 0;
-                fps = frames;
+                Platform.runLater(this::updateOutput);
+            }
+
+            if (System.currentTimeMillis() - startTimeMillis >= 1000) {
+                System.out.println("FPS: " + frames);
                 frames = 0;
-                //System.out.println(fps);
+                startTimeMillis += 1000;
             }
-
-            if (sleepTime >= 0) {
-                try {
-                    Thread.sleep(sleepTime);
-                } catch (InterruptedException ignored) {
-                }
-            }
-
-            frames++;
-
-            Platform.runLater(this::updateOutput);
         }
+
+        stop();
+    }
+
+    public void stop() {
+        running = false;
     }
 }

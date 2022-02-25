@@ -73,6 +73,12 @@ public class Renderer {
         return alpha << 24 | red << 16 | green << 8 | blue;
     }
 
+    public void noise() {
+        for (int i = 0; i < pixels.length; i++) {
+            pixels[i] = getRandomColor();
+        }
+    }
+
     public void clear() {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = 0xFFFFFF;

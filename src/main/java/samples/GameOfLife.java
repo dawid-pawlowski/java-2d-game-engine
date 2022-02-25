@@ -29,11 +29,13 @@ public class GameOfLife implements Game {
 
     @Override
     public void render() {
-        renderer.drawRect(50, 50, 200, 100);
+        //renderer.setFillColor(renderer.getRandomColor());
+        //renderer.drawRect(50, 50, 800, 600);
+        renderer.noise();
     }
 
     @Override
-    public void update() {
+    public void update(double sleepTime) {
         renderer.setFillColor(0xFF00FF00);
     }
 }
